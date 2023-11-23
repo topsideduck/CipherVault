@@ -40,11 +40,15 @@ CREATE TABLE IF NOT EXISTS Credentials
 )
         """)
 
+        self.connector.commit()
+
     def create_master(self, master_username: str, master_email_address: str, master_password_hashed: str):
         try:
             self.cursor.execute(
                 "INSERT INTO Masters (MasterUsername, MasterEmailAddress, MasterPassword) VALUES (%s, %s, %s)",
                 (master_username, master_email_address, master_password_hashed))
+
+            self.connector.commit()
 
             return True
 
@@ -58,15 +62,18 @@ CREATE TABLE IF NOT EXISTS Credentials
                 (master_id, website, username, encrypted_password)
             )
 
+            self.connector.commit()
+
             return True
 
         except:
             return False
 
-    def read_master(self, master_username: str, master_email_address: str, master_password_hashed: str):
+    def read_master(self, master_username: str, master_email_address: str):
         try:
-            self.cursor.execute("SELECT * FROM Masters WHERE MasterUsername = %s, MasterEmailAddress = %s, MasterPassword = %s",
-                                       (master_username, master_email_address, master_password_hashed))
+            self.cursor.execute(
+                "SELECT * FROM Masters WHERE MasterUsername = %s AND MasterEmailAddress = %s",
+                (master_username, master_email_address))
             return self.cursor.fetchone()
 
         except:
@@ -79,6 +86,3 @@ CREATE TABLE IF NOT EXISTS Credentials
 
         except:
             return None
-
-
-# Database("localhost", "CipherVault", "hEN!M&bDdkCHN3S%")
