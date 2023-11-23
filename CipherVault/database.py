@@ -94,3 +94,27 @@ CREATE TABLE IF NOT EXISTS Credentials
 
         except:
             return None
+
+    def update_credential(self, credential_id: int, website: str | None, username: str | None,
+                          encrypted_password: str | None):
+        try:
+            old_record = self.read_single_credential(credential_id)
+
+            if website is None:
+                website = old_record[2]
+
+            if username is None:
+                username = old_record[3]
+
+            if encrypted_password is None:
+                encrypted_password = old_record[4]
+
+            self.cursor.execute(
+                "UPDATE Credentials SET Website = %s, Username = %s, Password = %s WHERE CredentialID = %s",
+                (website, username, encrypted_password, credential_id))
+            self.connector.commit()
+
+            return True
+
+        except:
+            return False
