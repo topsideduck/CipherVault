@@ -8,14 +8,9 @@ import yagmail
 
 
 class OTP:
-    def __init__(self, email_address: str, password: str, target_username: str, target_email: str):
-        self.server = yagmail.SMTP(email_address, password)
-        self.otp = ''.join(random.choices(string.digits, k=6))
-
-        self.target_username = target_username
-        self.target_email = target_email
-
-        self.send_otp()
+    def __init__(self):
+        self.otp: int
+        self.server = yagmail.SMTP("ciphervault.otp@gmail.com", "teim weav dard ipje", )
 
     def send_email(
             self,
@@ -35,11 +30,13 @@ class OTP:
             bcc=bcc,
         )
 
-    def send_otp(self):
+    def send_otp(self, target_username, target_email):
+        self.otp = ''.join(random.choices(string.digits, k=6))
+
         self.send_email(
-            target_email=self.target_email,
+            target_email=target_email,
             subject="OTP to access CipherVault",
-            body=f"Welcome back to CipherVault, {self.target_username}!"
+            body=f"Welcome back to CipherVault, {target_username}!"
                  f"Please use the OTP given to complete your authentication.\n"
                  f"OTP: {self.otp}"
         )
