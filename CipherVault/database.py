@@ -19,8 +19,8 @@ class Database:
 CREATE TABLE IF NOT EXISTS Masters
 (
     MasterID INT NOT NULL AUTO_INCREMENT,
-    MasterUsername VARCHAR(256) NOT NULL,
-    MasterEmailAddress VARCHAR(256) NOT NULL,
+    MasterUsername VARCHAR(256) UNIQUE NOT NULL,
+    MasterEmailAddress VARCHAR(256) UNIQUE NOT NULL,
     MasterPassword VARCHAR(256) NOT NULL,
     PRIMARY KEY (MasterID)
 )
@@ -69,11 +69,11 @@ CREATE TABLE IF NOT EXISTS Credentials
         except:
             return False
 
-    def read_master(self, master_username: str, master_email_address: str):
+    def read_master(self, master_username: str):
         try:
             self.cursor.execute(
-                "SELECT * FROM Masters WHERE MasterUsername = %s AND MasterEmailAddress = %s",
-                (master_username, master_email_address))
+                "SELECT * FROM Masters WHERE MasterUsername = %s",
+                (master_username,))
             return self.cursor.fetchone()
 
         except:
