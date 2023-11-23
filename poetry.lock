@@ -749,4 +749,4 @@ dkim = ["dkimpy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "108797fe32135db7dcecb410062719625d0be72cbaf5595e4650af5a13828a48"
+content-hash = "fdaf0d94f9cd9352fdd1aed78b1abe4214ef6e63b3c09cd14e23deb56ebcc815"
