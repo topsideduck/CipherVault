@@ -79,6 +79,14 @@ CREATE TABLE IF NOT EXISTS Credentials
         except:
             return None
 
+    def read_single_credential(self, credential_id: int):
+        try:
+            self.cursor.execute("SELECT * FROM Credentials WHERE CredentialID = %s", (credential_id,))
+            return self.cursor.fetchone()
+
+        except:
+            return None
+
     def read_all_credentials(self, master_id: int):
         try:
             self.cursor.execute("SELECT * FROM Credentials WHERE MasterID = %s", (master_id,))
