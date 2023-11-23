@@ -212,8 +212,6 @@ class App:
         )
 
         self.console.print(entry_table)
-        # Prompt.ask("[cyan]For security purposes, your screen will be cleared. Press enter to continue.")
-        # self.console.clear()
 
     def update_entry(self, _id: int):
         self.list_specific_entry(_id)
@@ -278,12 +276,90 @@ class App:
 
         self.console.print(f"[bold green]Your login details have been updated successfully!")
 
+    def delete_entry(self, _id: int):
+        if not Confirm.ask("[red]Are you sure you want to delete this record? This action cannot be undone."):
+            return
+
+        if not self.database.delete_entry(_id):
+            self.console.print(
+                "[bold red]An error occurred, and the credentials could not be deleted. Please try again later.")
+            return
+
+        self.console.print("[bold green]The record was successfully deleted!")
+
+    def delete_master_account(self):
+        self.console.print("[BOLD RED]DANGER")
+
+        if not Confirm.ask("[bold red]Are you sure you want to delete all records and wipe your master account?"
+                           " This action cannot be undone."):
+            return
+
+        while True:
+            if Prompt.ask(
+                    "[red]As this is a sensitive command, please enter your password to continue",
+                    password=True) == self.master_password:
+                break
+
+            self.console.print("[red]Invalid password! Please try again.")
+
+        if not self.database.delete_account(self.master_id):
+            self.console.print(
+                "[bold red]An error occurred, and your account could not be deleted. Please try again later.")
+            return
+
+        self.console.print("[bold green]Your account and all records associated with it were successfully deleted!")
+        self.console.print("[cyan]Exiting...")
+        sys.exit()
+
+    def menu(self):
+        while True:
+            self.console.print(Panel("[bold yellow]Welcome to CipherVault", border_style="red", highlight=True,
+                                     title="CipherVault Password Manager", subtitle="Version 0.1 alpha"),
+                               justify="center")
+
+            self.console.print(f"[cyan]1: [turquoise2]Create a new credential entry.")
+            self.console.print(f"[cyan]2: [turquoise2]List all credential entries.")
+            self.console.print(f"[cyan]3: [turquoise2]Decrypt a specific entry.")
+            self.console.print(f"[cyan]4: [turquoise2]Update a specific entry.")
+            self.console.print(f"[bold red]5: [red]Delete a specific entry.")
+            self.console.print(f"[bold red]6: [red]Delete all entries and wipe your account.")
+            self.console.print(f"[cyan]7: [turquoise2]Exit CipherVault.")
+
+            choice = IntPrompt.ask("Choose an option", choices=[str(i) for i in range(1, 8)])
+
+            match choice:
+                case 1:
+                    self.create_new_entry()
+                case 2:
+                    self.list_all_entries()
+                case 3:
+                    records = self.database.read_all_credentials(self.master_id)
+                    _id = IntPrompt.ask("Enter the ID of the entry you want to decrypt",
+                                        choices=[str(i[0]) for i in records])
+                    self.list_specific_entry(_id)
+                case 4:
+                    records = self.database.read_all_credentials(self.master_id)
+                    _id = IntPrompt.ask("Enter the ID of the entry you want to update",
+                                        choices=[str(i[0]) for i in records])
+                    self.update_entry(_id)
+                case 5:
+                    records = self.database.read_all_credentials(self.master_id)
+                    _id = IntPrompt.ask("Enter the ID of the entry you want to delete",
+                                        choices=[str(i[0]) for i in records])
+                    self.delete_entry(_id)
+                case 6:
+                    self.delete_master_account()
+                case 7:
+                    self.console.print("[cyan]Exiting...")
+                    sys.exit()
+
+            self.console.print("[cyan]For security purposes, your screen will be cleared. Press enter to continue.")
+            input()
+            self.console.clear()
+
     def execute(self):
         self.authenticate()
-        # self.create_new_entry()
-        # self.list_all_entries()
-        # self.list_specific_entry(1)
-        self.update_entry(1)
+        self.menu()
 
 
 a = App()
