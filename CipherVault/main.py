@@ -8,6 +8,7 @@ from rich.panel import Panel
 from rich.prompt import Prompt, IntPrompt, Confirm
 from rich.table import Table
 
+from biometrics import Biometrics
 from database import Database
 from encryption import MasterEncryption, CredentialEncryption
 from generator import Generator
@@ -24,6 +25,7 @@ class App:
         self.master_encryption_handler: MasterEncryption
         self.credentials_encryption_handler: CredentialEncryption
 
+        self.biometrics = Biometrics()
         self.database = Database("localhost", "CipherVault", "hEN!M&bDdkCHN3S%")
         self.generator = Generator()
         self.otp = OTP()
@@ -43,8 +45,8 @@ class App:
         elif signup_or_login.lower() == "login":
             self.login()
 
-    def process_otp(self, master_username: str, master_email_address: str, otp_needed: bool = True):
-        while otp_needed:
+    def process_otp(self, master_username: str, master_email_address: str):
+        while True:
             with self.console.status("[yellow]Working...", spinner="point"):
                 self.otp.send_otp(master_username, master_email_address)
 
@@ -82,7 +84,15 @@ class App:
 
         master_password_hashed = self.master_encryption_handler.get_hashed_password()
 
-        if not self.database.create_master(master_username, master_email_address, master_password_hashed):
+        self.console.print(
+            "[cyan]For an additional layer of security, please register your face for biometric authentication."
+            " Press space to capture your face to use Face ID.")
+
+        face_path = self.biometrics.register_new_face()
+
+        self.console.print("[bold green]Your face has been registered!")
+
+        if not self.database.create_master(master_username, master_email_address, master_password_hashed, face_path):
             self.console.print(
                 "[bold red]There was an error while creating your master account. Please try again later.")
             sys.exit()
@@ -91,13 +101,13 @@ class App:
 
         if Confirm.ask("[cyan]Do you want to login now?"):
             self.console.clear()
-            self.login(otp_needed=False)
+            self.login()
 
         else:
             self.console.print("[cyan]Exiting...")
             sys.exit()
 
-    def login(self, otp_needed: bool = True):
+    def login(self):
         while True:
             master_username = Prompt.ask("[cyan]Please enter your username")
             master_password = Prompt.ask("[cyan]Please enter your password", password=True)
@@ -119,12 +129,25 @@ class App:
                 "[bold red]Unable to login! Please check your login credentials and try again.")
 
         master_email_address = master_account[2]
-        self.process_otp(master_username, master_email_address, otp_needed)
+
+        with self.console.status("[cyan]Authenticating via Face ID..."):
+            if not self.biometrics.recognise(master_account[4]):
+                self.console.print(
+                    "[bold red]Face ID authentication failed! Please try OTP verification instead.")
+                face_id = False
+
+            else:
+                self.console.print("[bold green]Successfully authenticated via Face ID!")
+                face_id = True
+
+        if not face_id:
+            self.process_otp(master_username, master_email_address)
 
         self.master_id = master_account[0]
         self.master_username = master_username
         self.master_email_address = master_email_address
         self.master_password = master_password
+        self.master_face_path = master_account[4]
 
         self.console.print(f"[bold green]Successfully logged in as {master_username}!")
 
@@ -288,7 +311,7 @@ class App:
         self.console.print("[bold green]The record was successfully deleted!")
 
     def delete_master_account(self):
-        self.console.print("[BOLD RED]DANGER")
+        self.console.print("[bold red]DANGER")
 
         if not Confirm.ask("[bold red]Are you sure you want to delete all records and wipe your master account?"
                            " This action cannot be undone."):
@@ -326,6 +349,23 @@ class App:
             self.console.print(f"[cyan]7: [turquoise2]Exit CipherVault.")
 
             choice = IntPrompt.ask("Choose an option", choices=[str(i) for i in range(1, 8)])
+
+            with self.console.status("[cyan]Authenticating via Face ID..."):
+                if not self.biometrics.recognise(self.master_face_path):
+                    self.console.print(
+                        "[bold red]Face ID authentication failed. Unauthorised!")
+                    face_id = False
+
+                else:
+                    self.console.print("[bold green]Authenticated via Face ID!")
+                    face_id = True
+
+            if not face_id:
+                self.console.print(
+                    "[cyan]For security purposes, your screen will be cleared. Press enter to continue.")
+                input()
+                self.console.clear()
+                continue
 
             match choice:
                 case 1:
