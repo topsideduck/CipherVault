@@ -37,6 +37,6 @@ class OTP:
             target_email=target_email,
             subject="OTP to access CipherVault",
             body=f"Welcome back to CipherVault, {target_username}!"
-                 f"Please use the OTP given to complete your authentication.\n"
+                 f" Please use the OTP given to complete your authentication.\n"
                  f"OTP: {self.otp}"
         )
