@@ -36,7 +36,3 @@ class Generator:
                 and sum(c.isdigit() for c in password) >= minimum_numerical_characters) \
                     and sum(True for c in password if c in string.punctuation) >= minimum_special_characters:
                 return password
-
-# generator = Generator(16, 2, 3, 4)
-# print(generator.generate_username())
-# print(generator.generate_password())
