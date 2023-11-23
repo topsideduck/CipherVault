@@ -118,3 +118,25 @@ CREATE TABLE IF NOT EXISTS Credentials
 
         except:
             return False
+
+    def delete_entry(self, credential_id: int):
+        try:
+            self.cursor.execute("DELETE FROM Credentials WHERE CredentialID = %s", (credential_id,))
+            self.connector.commit()
+
+            return True
+
+        except:
+            return False
+
+    def delete_account(self, master_id: int):
+        try:
+            self.cursor.execute("DELETE FROM Credentials WHERE MasterID = %s", (master_id,))
+            self.cursor.execute("DELETE FROM Masters WHERE MasterID = %s", (master_id,))
+
+            self.connector.commit()
+
+            return True
+
+        except:
+            return False
