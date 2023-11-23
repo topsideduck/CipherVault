@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS Masters
     MasterUsername VARCHAR(256) UNIQUE NOT NULL,
     MasterEmailAddress VARCHAR(256) UNIQUE NOT NULL,
     MasterPassword VARCHAR(256) NOT NULL,
+    FacePath VARCHAR(256) NOT NULL,
     PRIMARY KEY (MasterID)
 )
         """)
@@ -42,11 +43,11 @@ CREATE TABLE IF NOT EXISTS Credentials
 
         self.connector.commit()
 
-    def create_master(self, master_username: str, master_email_address: str, master_password_hashed: str):
+    def create_master(self, master_username: str, master_email_address: str, master_password_hashed: str, face_path: str):
         try:
             self.cursor.execute(
-                "INSERT INTO Masters (MasterUsername, MasterEmailAddress, MasterPassword) VALUES (%s, %s, %s)",
-                (master_username, master_email_address, master_password_hashed))
+                "INSERT INTO Masters (MasterUsername, MasterEmailAddress, MasterPassword, FacePath) VALUES (%s, %s, %s, %s)",
+                (master_username, master_email_address, master_password_hashed, face_path))
 
             self.connector.commit()
 
