@@ -11,6 +11,7 @@ mysql-connector-python = "^8.2.0"
 pycryptodome = "^3.19.0"
 bcrypt = "^4.0.1"
 yagmail = "^0.15.293"
+rich = "^13.7.0"
 
 
 [build-system]
