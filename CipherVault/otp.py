@@ -42,7 +42,3 @@ class OTP:
             body=f"Welcome back to CipherVault! Please use the OTP given to complete your authentication.\n"
                  f"OTP: {self.otp}"
         )
-
-        return True
-
-# yag = OTP('ciphervault.otp@gmail.com', 'teim weav dard ipje', "Hari", "r.harikeshav@gmail.com")
