@@ -5,10 +5,11 @@ import sys
 
 from rich.console import Console
 from rich.panel import Panel
-from rich.prompt import Prompt, Confirm
+from rich.prompt import Prompt, IntPrompt, Confirm
 
 from database import Database
 from encryption import MasterEncryption, CredentialEncryption
+from generator import Generator
 from otp import OTP
 
 
@@ -23,6 +24,8 @@ class App:
         self.credentials_encryption_handler: CredentialEncryption
 
         self.database = Database("localhost", "CipherVault", "hEN!M&bDdkCHN3S%")
+        self.generator = Generator()
+        self.otp = OTP()
 
         self.console = Console()
         self.console.clear()
@@ -42,15 +45,12 @@ class App:
     def process_otp(self, master_username: str, master_email_address: str, otp_needed: bool = True):
         while otp_needed:
             with self.console.status("[yellow]Working...", spinner="point"):
-                otp = OTP("ciphervault.otp@gmail.com",
-                          "teim weav dard ipje",
-                          master_username,
-                          master_email_address)
+                self.otp.send_otp(master_username, master_email_address)
 
             user_otp = Prompt.ask(
                 "[cyan]An OTP was just sent to your registered email address. Please enter it here for verification")
 
-            if otp.otp == user_otp:
+            if self.otp.otp == user_otp:
                 self.console.print("[bold green]Your OTP was correct!")
                 break
 
@@ -127,8 +127,50 @@ class App:
 
         self.console.print(f"[bold green]Successfully logged in as {master_username}!")
 
+    def create_new_entry(self):
+        website = Prompt.ask("[cyan]Enter the website to store credentials for")
+
+        if Confirm.ask("[cyan]Do you want a randomly generated username?"):
+            while True:
+                username = self.generator.generate_username()
+
+                if Confirm.ask(f"[cyan]Do you want to use the username {username} for the website {website} ?"):
+                    break
+
+        else:
+            username = Prompt.ask(f"[cyan]Enter a username for the website {website}")
+
+        if Confirm.ask("[cyan]Do you want a randomly generated password?"):
+            password_length = IntPrompt.ask("[cyan]Enter the password length", default=16)
+            minimum_uppercase_characters = IntPrompt.ask("[cyan]Enter the minimum number of uppercase characters",
+                                                         default=1)
+            minimum_numerical_characters = IntPrompt.ask("[cyan]Enter the minimum number of numerical characters",
+                                                         default=1)
+            minimum_special_characters = IntPrompt.ask("[cyan]Enter the minimum number of special characters",
+                                                       default=1)
+
+            while True:
+                password = self.generator.generate_password(
+                    password_length,
+                    minimum_uppercase_characters,
+                    minimum_numerical_characters,
+                    minimum_special_characters
+                )
+
+                if Confirm.ask(f"[cyan]Do you want to use the password {password} for the website {website} ?"):
+                    break
+
+        else:
+            password = Prompt.ask(f"[cyan]Enter a password for the website {website}", password=True)
+
+        encrypted_password = self.credentials_encryption_handler.encrypt(password)
+        self.database.create_credential(self.master_id, website, username, encrypted_password)
+
+        self.console.print(f"[bold green]Your login details for {website} have been stored successfully!")
+
     def execute(self):
         self.authenticate()
+        self.create_new_entry()
 
 
 a = App()
