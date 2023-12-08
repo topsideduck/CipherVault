@@ -18,6 +18,8 @@ class Biometrics:
     def register_new_face(self):
         webcam = cv2.VideoCapture(0)
 
+        ret, frame = webcam.read()
+
         while True:
             try:
                 ret, frame = webcam.read()
