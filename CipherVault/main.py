@@ -22,6 +22,9 @@ class App:
         self.master_email_address: str
         self.master_password: str
 
+        self.console = Console()
+        self.console.clear()
+
         self.master_encryption_handler: MasterEncryption
         self.credentials_encryption_handler: CredentialEncryption
 
@@ -30,11 +33,9 @@ class App:
         self.generator = Generator()
         self.otp = OTP()
 
-        self.console = Console()
-        self.console.clear()
-
         self.console.print(Panel("[bold yellow]Welcome to CipherVault", border_style="red", highlight=True,
-                                 title="CipherVault Password Manager", subtitle="Version 0.1 alpha"), justify="center")
+                                 title="CipherVault Password Manager", subtitle="Version 0.1 alpha"),
+                           justify="center")
 
     def authenticate(self):
         signup_or_login = Prompt.ask("[cyan]Do you want to sign up or login?", choices=["Signup", "Login"])
@@ -398,8 +399,12 @@ class App:
             self.console.clear()
 
     def execute(self):
-        self.authenticate()
-        self.menu()
+        try:
+            self.authenticate()
+            self.menu()
+
+        except KeyboardInterrupt:
+            sys.exit()
 
 
 a = App()
